@@ -22,6 +22,7 @@
   - [7. Deterministic Testing Harness & Acceptance Suite](#7-deterministic-testing-harness--acceptance-suite)
 - [Architecture & Workflow](#architecture--workflow)
 - [What Is Pending (In-Flight Roadmap)](#what-is-pending-in-flight-roadmap)
+  - [The Next Stage: Apple On-Device Foundation Models](#the-next-stage-apple-on-device-foundation-models)
 - [What Is Still Being Brainstormed](#what-is-still-being-brainstormed)
 - [Installation & Quickstart](#installation--quickstart)
   - [Prerequisites](#prerequisites)
@@ -64,6 +65,7 @@ The organizer supports four interchangeable operational modes configured via `~/
 | **`ai` (Local)** | **Ollama** (`gemma4:e2b`, `gemma2:2b`, etc.) | **100% Private, On-Device**<br>Requires 4–8 GB unified host RAM | Direct communication with Ollama over local loopback (`http://localhost:11434`). Verifies model readiness, supports streaming download progress, and executes locally. |
 | **`gemini` (Cloud)** | **Google Gemini API** (`gemini-3.8-flash` / `gemini-2.5-flash`) | **Free Cloud Tier**<br>Zero host RAM or GPU needed | Uses official `google-genai` SDK. Supports multimodal vision classification (images up to 10 MB) and text previews. Gracefully falls back to extension rules if cloud rate limits or demand spikes occur. |
 | **`openrouter` (Cloud)** | **OpenRouter API** (`openrouter/free`) | **Free Cloud Meta-Router**<br>Zero host RAM or GPU needed | Free-tier cloud inference with strict JSON schema outputs (`response_format: json_schema`) for structured, dependable categorization. |
+| **`apple` (Next Stage)**| **Apple Foundation Models Framework** | **100% Private, Native Apple Silicon**<br>Apple Neural Engine (ANE) | Direct Apple Silicon on-device inference via macOS Foundation Models framework. Zero external runtime setup (no Ollama needed), zero cloud network egress, and native system security. |
 | **`rule-only` (Static)**| **Deterministic Rule Engine** | **Zero AI, Instant, Offline**<br>Runs on any machine | Categorizes files strictly by file extension and metadata without requiring Ollama, model weights, or internet access. |
 
 ### 2. Interactive First-Run Setup Wizard
@@ -149,16 +151,19 @@ graph TD
     
     subgraph "Inference Providers"
         OllamaAdapter["Ollama Adapter (Strict Loopback)"]
+        AppleAdapter["Apple Foundation Model Framework (Next Stage)"]
         GeminiAdapter["Google Gemini Adapter (google-genai)"]
         OpenRouterAdapter["OpenRouter Adapter (JSON Schema)"]
         StaticRules["Deterministic Extension Rules"]
     end
     
     Lifecycle --> OllamaAdapter
+    Lifecycle --> AppleAdapter
     Lifecycle --> GeminiAdapter
     Lifecycle --> OpenRouterAdapter
     
     RulesEngine --> OllamaAdapter
+    RulesEngine --> AppleAdapter
     RulesEngine --> GeminiAdapter
     RulesEngine --> OpenRouterAdapter
     RulesEngine --> StaticRules
@@ -182,6 +187,14 @@ While the inspection, categorization, onboarding, and interactive review workflo
 4. **Direct Ollama Inference Integration in `scan`**:
    - Local model discovery, pulling, verification, and smoke tests are implemented in `OllamaProviderAdapter`.
    - Wiring local Ollama prompt generation directly into `scan_and_propose_tree` (parallel to Gemini and OpenRouter adapters) is the next step for local-mode scanning.
+
+### The Next Stage: Apple On-Device Foundation Models
+
+We are actively working through integrating **Apple's on-device foundation models using the native Foundation Models framework**:
+- **Zero External Runtime Setup**: Removes the prerequisite of downloading, running, or maintaining third-party background services like Ollama. Users can organize folders out of the box with on-device AI.
+- **Hardware-Accelerated Apple Silicon Architecture**: Directly targets the Apple Neural Engine (ANE) and unified memory architecture on Apple Silicon Macs, providing blazing-fast local categorization with near-zero host RAM footprint.
+- **Native OS Privacy & System Integration**: Operates fully on-device within macOS sandboxing and security policies, ensuring complete offline document privacy with zero external network connectivity.
+- **macOS Sequoia+ System Intelligence**: Leverages native system intelligence capabilities to analyze document summaries, images, and text content directly through macOS system APIs.
 
 ---
 
