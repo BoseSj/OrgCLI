@@ -1,0 +1,2 @@
+[console_scripts]
+organizer = organizer.cli:app
